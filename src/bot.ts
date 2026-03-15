@@ -42,8 +42,8 @@ bot.on("message:text", async (ctx) => {
   const userId = ctx.from.id;
   const userText = ctx.message.text;
 
-  if (userText.length > 10000) {
-    return ctx.reply("메시지가 너무 깁니다. 10,000자 이내로 보내주세요.");
+  if (userText.length > config.maxInputLength) {
+    return ctx.reply(`메시지가 너무 깁니다. ${config.maxInputLength.toLocaleString()}자 이내로 보내주세요.`);
   }
 
   addMessage(userId, "user", userText);

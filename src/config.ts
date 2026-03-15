@@ -6,6 +6,7 @@ interface Config {
   telegramBotToken: string;
   systemPrompt: string;
   maxHistoryMessages: number;
+  maxInputLength: number;
   llm: {
     provider: LLMProviderType;
     ollama?: { baseUrl: string; model: string };
@@ -31,6 +32,7 @@ export const config: Config = {
   telegramBotToken: token,
   systemPrompt: process.env.SYSTEM_PROMPT || "You are a helpful assistant.",
   maxHistoryMessages: Number(process.env.MAX_HISTORY_MESSAGES) || 20,
+  maxInputLength: Number(process.env.MAX_INPUT_LENGTH) || 10000,
   llm: {
     provider,
     ollama: {
