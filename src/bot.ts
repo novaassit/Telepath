@@ -24,7 +24,8 @@ bot.command("start", (ctx) =>
 );
 
 bot.command("clear", (ctx) => {
-  clearHistory(ctx.from!.id);
+  if (!ctx.from) return;
+  clearHistory(ctx.from.id);
   return ctx.reply("대화 히스토리가 초기화되었습니다.");
 });
 
@@ -40,6 +41,10 @@ bot.on("message:text", async (ctx) => {
   console.log(`[수신] chat_id=${ctx.chat.id} 텍스트 길이=${ctx.message.text?.length ?? 0}`);
   const userId = ctx.from.id;
   const userText = ctx.message.text;
+
+  if (userText.length > config.maxInputLength) {
+    return ctx.reply(`메시지가 너무 깁니다. ${config.maxInputLength.toLocaleString()}자 이내로 보내주세요.`);
+  }
 
   addMessage(userId, "user", userText);
 
@@ -88,5 +93,6 @@ bot.on("message:text", async (ctx) => {
 });
 
 bot.catch((err) => {
-  console.error("봇 오류:", err.message);
+  const msg = err instanceof Error ? err.message : String(err);
+  console.error("봇 오류:", msg);
 });
