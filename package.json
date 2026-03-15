@@ -1,0 +1,20 @@
+{
+  "name": "telegram-ollama-bot",
+  "version": "1.0.0",
+  "description": "Telegram chatbot powered by local Ollama LLM",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "grammy": "^1.35.0",
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0"
+  }
+}
