@@ -33,7 +33,7 @@ export function createGeminiProvider(): LLMProvider {
     );
   }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
   return {
     async chat(messages: Message[]): Promise<string> {
@@ -66,8 +66,12 @@ export function createGeminiProvider(): LLMProvider {
       try {
         res = await fetch(url, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": apiKey,
+          },
           body: JSON.stringify(body),
+          signal: AbortSignal.timeout(120_000),
         });
       } catch (err) {
         throw new Error(

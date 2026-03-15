@@ -68,6 +68,7 @@ export function createClaudeProvider(): LLMProvider {
             "anthropic-version": "2023-06-01",
           },
           body: JSON.stringify(body),
+          signal: AbortSignal.timeout(120_000),
         });
       } catch (err) {
         throw new Error(

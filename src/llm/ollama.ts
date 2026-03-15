@@ -19,6 +19,7 @@ export function createOllamaProvider(): LLMProvider {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ model, messages, stream: false }),
+          signal: AbortSignal.timeout(120_000),
         });
       } catch (err) {
         throw new Error(
@@ -30,7 +31,11 @@ export function createOllamaProvider(): LLMProvider {
         throw new Error(`Ollama 오류 (${res.status}): ${body}`);
       }
       const data = (await res.json()) as OllamaChatResponse;
-      return data.message.content;
+      const content = data?.message?.content;
+      if (content == null) {
+        throw new Error("Ollama 응답에 content가 없습니다.");
+      }
+      return content;
     },
   };
 }

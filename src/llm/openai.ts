@@ -46,6 +46,7 @@ export function createOpenAIProvider(): LLMProvider {
             Authorization: `Bearer ${apiKey}`,
           },
           body: JSON.stringify({ model, messages: body, stream: false }),
+          signal: AbortSignal.timeout(120_000),
         });
       } catch (err) {
         throw new Error(

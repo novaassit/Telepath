@@ -52,6 +52,7 @@ export function createCustomProvider(): LLMProvider {
           method: "POST",
           headers,
           body: JSON.stringify({ model, messages: body, stream: false }),
+          signal: AbortSignal.timeout(120_000),
         });
       } catch (err) {
         throw new Error(
