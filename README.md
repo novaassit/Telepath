@@ -43,7 +43,7 @@ src/
    - **Ollama**: [설치](https://ollama.com/download) 후 서버 실행 및 모델 다운로드
      ```bash
      ollama serve
-     ollama pull llama3
+     ollama pull llama3.2
      ```
    - **OpenAI**: API 키 발급 (OpenAI, [Azure](https://azure.microsoft.com/products/cognitive-services/openai-service), [Groq](https://groq.com) 등)
    - **Custom**: OpenAI 호환 API 엔드포인트 (Open WebUI, LiteLLM, vLLM 등)
@@ -79,7 +79,7 @@ npm run dev
 TELEGRAM_BOT_TOKEN=123456:ABC...
 LLM_PROVIDER=ollama
 OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=llama3
+OLLAMA_MODEL=llama3.2
 ```
 
 **OpenAI (클라우드)**  
@@ -88,7 +88,7 @@ OLLAMA_MODEL=llama3
 TELEGRAM_BOT_TOKEN=123456:ABC...
 LLM_PROVIDER=openai
 OPENAI_API_KEY=sk-...
-OPENAI_MODEL=gpt-3.5-turbo
+OPENAI_MODEL=gpt-4o
 ```
 
 **Custom LLM (OpenAI 호환 API)**  
@@ -96,21 +96,23 @@ OPENAI_MODEL=gpt-3.5-turbo
 LLM_PROVIDER=custom
 CUSTOM_LLM_BASE_URL=https://your-api.com/v1
 CUSTOM_LLM_API_KEY=optional_for_local
-CUSTOM_LLM_MODEL=llama3
+CUSTOM_LLM_MODEL=gpt-4o
 ```
 
-**Claude (Anthropic)** — 모델 예: `claude-3-5-sonnet`, `claude-code`
+**Claude (Anthropic)** — 모델 예: `claude-sonnet-4-6`, `claude-opus-4-6`, `claude-code`
 ```env
 LLM_PROVIDER=claude
 ANTHROPIC_API_KEY=sk-ant-...
-CLAUDE_MODEL=claude-3-5-sonnet-20241022
+CLAUDE_MODEL=claude-sonnet-4-6
+CLAUDE_MAX_TOKENS=8192
 ```
 
-**Gemini (Google AI)** — 모델 예: `gemini-1.5-flash`, `gemini-1.5-pro`
+**Gemini (Google AI)** — 모델 예: `gemini-2.5-flash`, `gemini-2.5-pro`
 ```env
 LLM_PROVIDER=gemini
 GEMINI_API_KEY=your_key
-GEMINI_MODEL=gemini-1.5-flash
+GEMINI_MODEL=gemini-2.5-flash
+GEMINI_MAX_TOKENS=8192
 ```
 
 커스텀 엔드포인트(예: Azure, Groq)는 `openai` 프로바이더로:
@@ -129,23 +131,23 @@ OPENAI_MODEL=gpt-4
 | `LLM_PROVIDER` | | `ollama` | `ollama` \| `openai` \| `custom` \| `claude` \| `gemini` |
 | **Ollama** | | | |
 | `OLLAMA_BASE_URL` | | `http://localhost:11434` | Ollama 서버 주소 |
-| `OLLAMA_MODEL` | | `llama3` | 사용할 모델 |
+| `OLLAMA_MODEL` | | `llama3.2` | 사용할 모델 |
 | **OpenAI** | | | |
 | `OPENAI_API_KEY` | O\* | — | API 키 (\*openai 선택 시 필수) |
 | `OPENAI_BASE_URL` | | OpenAI 공식 | Azure·Groq 등 엔드포인트 |
-| `OPENAI_MODEL` | | `gpt-3.5-turbo` | 모델명 |
+| `OPENAI_MODEL` | | `gpt-4o` | 모델명 |
 | **Custom** | | | OpenAI 호환 API (Open WebUI, LiteLLM 등) |
 | `CUSTOM_LLM_BASE_URL` | O\* | — | API 베이스 URL (\*custom 선택 시 필수) |
 | `CUSTOM_LLM_API_KEY` | | — | API 키 (선택) |
-| `CUSTOM_LLM_MODEL` | | `gpt-3.5-turbo` | 모델명 |
+| `CUSTOM_LLM_MODEL` | | `gpt-4o` | 모델명 |
 | **Claude** | | | Anthropic Claude |
 | `ANTHROPIC_API_KEY` | O\* | — | API 키 (\*claude 선택 시 필수) |
-| `CLAUDE_MODEL` | | `claude-3-5-sonnet-20241022` | 모델 (예: claude-code) |
-| `CLAUDE_MAX_TOKENS` | | `1024` | 최대 출력 토큰 |
+| `CLAUDE_MODEL` | | `claude-sonnet-4-6` | 모델 (예: claude-opus-4-6, claude-code) |
+| `CLAUDE_MAX_TOKENS` | | `8192` | 최대 출력 토큰 |
 | **Gemini** | | | Google AI Gemini |
 | `GEMINI_API_KEY` | O\* | — | API 키 (\*gemini 선택 시 필수) |
-| `GEMINI_MODEL` | | `gemini-1.5-flash` | 모델명 |
-| `GEMINI_MAX_TOKENS` | | `1024` | 최대 출력 토큰 |
+| `GEMINI_MODEL` | | `gemini-2.5-flash` | 모델명 |
+| `GEMINI_MAX_TOKENS` | | `8192` | 최대 출력 토큰 |
 | **공통** | | | |
 | `SYSTEM_PROMPT` | | `You are a helpful assistant.` | 시스템 프롬프트 |
 | `MAX_HISTORY_MESSAGES` | | `20` | 유지할 최대 대화 메시지 수 |
