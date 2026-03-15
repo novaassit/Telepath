@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "tsx src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "webhook:delete": "tsx scripts/delete-webhook.ts",
+    "claude:test": "tsx scripts/test-claude-key.ts"
   },
   "dependencies": {
     "grammy": "^1.35.0",
