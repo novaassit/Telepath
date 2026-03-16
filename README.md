@@ -163,13 +163,22 @@ GUI로 봇을 관리할 수 있는 Electron 데스크톱 앱을 지원합니다.
 - **Settings 탭**에서 `.env` 설정을 GUI로 편집
 - LLM 프로바이더 선택 시 해당 설정만 표시
 
-### 실행
+### 실행 (개발)
 
 ```bash
 npm run dev:electron     # 개발 모드 (빌드 + 실행)
-npm run build:electron   # 빌드만
+npm run build:electron   # TypeScript 빌드만
 npm run start:electron   # 빌드된 앱 실행
 ```
+
+### 패키징 (배포용 바이너리)
+
+```bash
+npm run pack   # .app (Mac) / 실행 파일만 생성 (빠름)
+npm run dist   # .dmg (Mac) / .exe (Win) / .AppImage (Linux) 인스톨러 생성
+```
+
+빌드 결과물은 `release/` 디렉토리에 생성됩니다.
 
 ### 구조
 
