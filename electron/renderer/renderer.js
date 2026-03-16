@@ -1,7 +1,7 @@
 console.log("[renderer] script loaded");
 const MAX_LOG_ENTRIES = 1000;
-const { electronAPI } = window;
-console.log("[renderer] electronAPI:", typeof electronAPI);
+const api = window.electronAPI;
+console.log("[renderer] electronAPI:", typeof api);
 
 // Elements
 const statusDot = document.getElementById("status-dot");
@@ -44,7 +44,7 @@ function updateStatus(status) {
   btnStop.disabled = status === "stopped" || status === "error";
 }
 
-electronAPI.onStatusChange(updateStatus);
+api.onStatusChange(updateStatus);
 
 // Logs
 function addLogEntry(entry) {
@@ -70,7 +70,7 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-electronAPI.onLog(addLogEntry);
+api.onLog(addLogEntry);
 
 btnClearLogs.addEventListener("click", () => {
   logContainer.innerHTML = "";
@@ -78,11 +78,11 @@ btnClearLogs.addEventListener("click", () => {
 
 // Start / Stop
 btnStart.addEventListener("click", () => {
-  electronAPI.startBot();
+  api.startBot();
 });
 
 btnStop.addEventListener("click", () => {
-  electronAPI.stopBot();
+  api.stopBot();
 });
 
 // Settings
@@ -90,8 +90,8 @@ let envSchema = [];
 let currentEnv = {};
 
 async function loadSettings() {
-  envSchema = await electronAPI.getEnvSchema();
-  currentEnv = await electronAPI.readEnv();
+  envSchema = await api.getEnvSchema();
+  currentEnv = await api.readEnv();
   renderSettings();
 }
 
@@ -171,7 +171,7 @@ btnSave.addEventListener("click", async () => {
     if (val) values[key] = val;
   });
 
-  await electronAPI.writeEnv(values);
+  await api.writeEnv(values);
   currentEnv = values;
   saveMessage.textContent = "Settings saved. Restart the bot to apply.";
   setTimeout(() => {
@@ -182,7 +182,7 @@ btnSave.addEventListener("click", async () => {
 // Init
 async function init() {
   try {
-    const status = await electronAPI.getStatus();
+    const status = await api.getStatus();
     updateStatus(status);
   } catch (e) {
     console.error("Failed to get bot status:", e);
