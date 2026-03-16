@@ -1,7 +1,7 @@
 {
-  "name": "telegram-ollama-bot",
+  "name": "telepath",
   "version": "1.0.0",
-  "description": "Telegram chatbot powered by local Ollama LLM",
+  "description": "Telegram chatbot powered by LLM (Ollama, OpenAI, Claude, Gemini)",
   "type": "module",
   "main": "dist-electron/main.cjs",
   "scripts": {
@@ -9,6 +9,8 @@
     "dev:electron": "tsc -p tsconfig.electron.json && node scripts/copy-renderer.js && electron dist-electron/main.cjs",
     "build": "tsc",
     "build:electron": "tsc -p tsconfig.electron.json && node scripts/copy-renderer.js",
+    "pack": "npm run build:electron && electron-builder --dir",
+    "dist": "npm run build:electron && electron-builder",
     "start": "node dist/index.js",
     "start:electron": "electron dist-electron/main.cjs",
     "webhook:delete": "tsx scripts/delete-webhook.ts",
@@ -22,6 +24,37 @@
     "typescript": "^5.7.0",
     "@types/node": "^22.0.0",
     "tsx": "^4.19.0",
-    "electron": "^35.0.0"
+    "electron": "^35.0.0",
+    "electron-builder": "^25.1.0"
+  },
+  "build": {
+    "appId": "com.novaassit.telepath",
+    "productName": "Telepath",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist-electron/**/*",
+      "src/**/*",
+      "node_modules/**/*",
+      "package.json",
+      ".env.example"
+    ],
+    "extraResources": [
+      {
+        "from": ".env.example",
+        "to": ".env.example"
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.utilities",
+      "target": ["dmg"]
+    },
+    "win": {
+      "target": ["nsis"]
+    },
+    "linux": {
+      "target": ["AppImage"]
+    }
   }
 }

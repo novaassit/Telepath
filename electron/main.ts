@@ -9,7 +9,11 @@ import {
   getExampleEnvPath,
 } from "./env-manager";
 
-const projectRoot = path.resolve(__dirname, "..");
+// 개발 모드: dist-electron/../ = 프로젝트 루트
+// 패키징 모드: app.getAppPath() = asar 내부
+const projectRoot = app.isPackaged
+  ? path.dirname(app.getPath("exe"))
+  : path.resolve(__dirname, "..");
 const botRunner = new BotRunner();
 
 let mainWindow: BrowserWindow | null = null;
