@@ -187,11 +187,16 @@ function renderSettings() {
 }
 
 btnSave.addEventListener("click", async () => {
-  const values = {};
+  // 기존 저장값을 기반으로 현재 폼 값을 덮어쓰기 (다른 프로바이더 설정 유지)
+  const values = { ...currentEnv };
   settingsForm.querySelectorAll("input, select").forEach((el) => {
     const key = el.dataset.key;
     const val = el.value.trim();
-    if (val) values[key] = val;
+    if (val) {
+      values[key] = val;
+    } else {
+      delete values[key];
+    }
   });
 
   await api.writeEnv(values);
