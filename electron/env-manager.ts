@@ -64,6 +64,12 @@ export function getEnvSchema(examplePath: string): EnvSchema[] {
       currentComment = "";
       continue;
     }
+    // "# 공통" 같은 단순 그룹 헤더 인식
+    if (/^# \S+$/.test(trimmed) && !trimmed.includes(":")) {
+      currentGroup = trimmed.replace(/^#\s*/, "");
+      currentComment = "";
+      continue;
+    }
     if (trimmed.startsWith("#")) {
       currentComment = trimmed.replace(/^#\s*/, "");
       continue;
