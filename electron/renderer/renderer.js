@@ -1,7 +1,5 @@
-console.log("[renderer] script loaded");
 const MAX_LOG_ENTRIES = 1000;
 const api = window.electronAPI;
-console.log("[renderer] electronAPI:", typeof api);
 
 // Elements
 const statusDot = document.getElementById("status-dot");
@@ -22,16 +20,12 @@ const statusLabels = {
 };
 
 // Tabs
-const allTabs = document.querySelectorAll(".tab");
-console.log("[renderer] found tabs:", allTabs.length);
-allTabs.forEach((tab) => {
+document.querySelectorAll(".tab").forEach((tab) => {
   tab.addEventListener("click", () => {
-    console.log("[renderer] tab clicked:", tab.dataset.tab);
     document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
     document.querySelectorAll(".tab-content").forEach((c) => c.classList.remove("active"));
     tab.classList.add("active");
     const target = document.getElementById("tab-" + tab.dataset.tab);
-    console.log("[renderer] target element:", target);
     if (target) target.classList.add("active");
   });
 });
