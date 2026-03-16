@@ -3,14 +3,14 @@
   "version": "1.0.0",
   "description": "Telegram chatbot powered by local Ollama LLM",
   "type": "module",
-  "main": "dist-electron/main.js",
+  "main": "dist-electron/main.cjs",
   "scripts": {
     "dev": "tsx src/index.ts",
-    "dev:electron": "tsc -p tsconfig.electron.json && node scripts/copy-renderer.js && electron dist-electron/main.js",
+    "dev:electron": "tsc -p tsconfig.electron.json && node scripts/copy-renderer.js && electron dist-electron/main.cjs",
     "build": "tsc",
     "build:electron": "tsc -p tsconfig.electron.json && node scripts/copy-renderer.js",
     "start": "node dist/index.js",
-    "start:electron": "electron dist-electron/main.js",
+    "start:electron": "electron dist-electron/main.cjs",
     "webhook:delete": "tsx scripts/delete-webhook.ts",
     "claude:test": "tsx scripts/test-claude-key.ts"
   },
