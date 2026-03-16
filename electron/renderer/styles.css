@@ -132,14 +132,13 @@ h1 {
 main {
   flex: 1;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  position: relative;
 }
 
 .tab-content {
   display: none;
-  flex: 1;
   flex-direction: column;
+  height: 100%;
   overflow: hidden;
 }
 
@@ -178,7 +177,7 @@ main {
 
 /* Settings */
 #tab-settings {
-  overflow-y: auto;
+  overflow-y: hidden;
 }
 
 #settings-form {
