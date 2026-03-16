@@ -10,10 +10,19 @@ import {
 } from "./env-manager";
 
 // 개발 모드: dist-electron/../ = 프로젝트 루트
-// 패키징 모드: app.getAppPath() = asar 내부
+// 패키징 모드: userData (~Library/Application Support/Telepath) 에 .env 저장
+//              extraResources (Contents/Resources) 에 .env.example
 const projectRoot = app.isPackaged
   ? path.dirname(app.getPath("exe"))
   : path.resolve(__dirname, "..");
+
+// .env 저장 경로: 패키징 시 userData, 개발 시 프로젝트 루트
+const envDir = app.isPackaged ? app.getPath("userData") : projectRoot;
+
+// .env.example 경로: 패키징 시 Resources 폴더, 개발 시 프로젝트 루트
+const resourcesDir = app.isPackaged
+  ? (process.resourcesPath ?? path.join(path.dirname(app.getPath("exe")), "..", "Resources"))
+  : projectRoot;
 const botRunner = new BotRunner();
 
 let mainWindow: BrowserWindow | null = null;
@@ -43,7 +52,7 @@ function createWindow() {
 
 // IPC handlers
 ipcMain.handle("bot:start", () => {
-  const envVars = readEnvFile(getEnvPath(projectRoot));
+  const envVars = readEnvFile(getEnvPath(envDir));
   botRunner.start(projectRoot, envVars);
 });
 
@@ -56,15 +65,15 @@ ipcMain.handle("bot:status", () => {
 });
 
 ipcMain.handle("env:read", () => {
-  return readEnvFile(getEnvPath(projectRoot));
+  return readEnvFile(getEnvPath(envDir));
 });
 
 ipcMain.handle("env:write", (_event, values: Record<string, string>) => {
-  writeEnvFile(getEnvPath(projectRoot), values);
+  writeEnvFile(getEnvPath(envDir), values);
 });
 
 ipcMain.handle("env:get-schema", () => {
-  return getEnvSchema(getExampleEnvPath(projectRoot));
+  return getEnvSchema(getExampleEnvPath(resourcesDir));
 });
 
 // Forward bot events to renderer
