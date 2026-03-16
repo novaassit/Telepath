@@ -50,13 +50,15 @@ export class BotRunner extends EventEmitter {
 
     if (app.isPackaged) {
       // 패키징 모드: 미리 빌드된 JS를 node로 실행
-      const appRoot = path.join(app.getAppPath());
+      const appRoot = app.getAppPath();
       const entryFile = path.join(appRoot, "dist", "index.js");
-      command = process.execPath; // Electron 내장 node
-      // Electron의 node로 일반 스크립트를 실행하려면 ELECTRON_RUN_AS_NODE 필요
+      command = process.execPath;
       mergedEnv["ELECTRON_RUN_AS_NODE"] = "1";
-      args = [entryFile];
+      // ESM import 지원을 위해 플래그 추가
+      args = ["--experimental-detect-module", entryFile];
       cwd = appRoot;
+      this.log("info", `appRoot: ${appRoot}`);
+      this.log("info", `entryFile: ${entryFile}`);
     } else {
       // 개발 모드: tsx로 TypeScript 직접 실행
       const tsxBin = path.resolve(projectRoot, "node_modules", ".bin", "tsx");
@@ -91,11 +93,11 @@ export class BotRunner extends EventEmitter {
       }
     });
 
-    this.child.on("exit", (code) => {
+    this.child.on("exit", (code, signal) => {
       this.child = null;
       if (this._status === "starting") {
         this.setStatus("error");
-        this.log("error", `봇 시작 실패 (exit code: ${code})`);
+        this.log("error", `봇 시작 실패 (exit code: ${code}, signal: ${signal})`);
       } else {
         this.setStatus("stopped");
         this.log("info", `봇이 종료되었습니다 (exit code: ${code})`);
