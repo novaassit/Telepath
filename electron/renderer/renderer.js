@@ -89,6 +89,27 @@ async function loadSettings() {
   renderSettings();
 }
 
+// 그룹명 → 프로바이더 매핑
+const providerGroupMap = {
+  "Ollama (LLM_PROVIDER=ollama)": "ollama",
+  "OpenAI (LLM_PROVIDER=openai)": "openai",
+  "Custom · OpenAI 호환 API (LLM_PROVIDER=custom)": "custom",
+  "Claude / Anthropic (LLM_PROVIDER=claude)": "claude",
+  "Gemini / Google AI (LLM_PROVIDER=gemini)": "gemini",
+};
+
+function getSelectedProvider() {
+  const el = document.getElementById("input-LLM_PROVIDER");
+  return el ? el.value : (currentEnv["LLM_PROVIDER"] || "ollama");
+}
+
+function updateProviderVisibility() {
+  const selected = getSelectedProvider();
+  document.querySelectorAll(".settings-group[data-provider]").forEach((group) => {
+    group.style.display = group.dataset.provider === selected ? "" : "none";
+  });
+}
+
 function renderSettings() {
   settingsForm.innerHTML = "";
   const groups = new Map();
@@ -103,6 +124,11 @@ function renderSettings() {
   for (const [groupName, fields] of groups) {
     const group = document.createElement("div");
     group.className = "settings-group";
+
+    const providerKey = providerGroupMap[groupName];
+    if (providerKey) {
+      group.dataset.provider = providerKey;
+    }
 
     const title = document.createElement("h3");
     title.textContent = groupName;
@@ -137,6 +163,7 @@ function renderSettings() {
           }
           select.appendChild(option);
         }
+        select.addEventListener("change", updateProviderVisibility);
         fieldEl.appendChild(select);
       } else {
         const input = document.createElement("input");
@@ -155,6 +182,8 @@ function renderSettings() {
 
     settingsForm.appendChild(group);
   }
+
+  updateProviderVisibility();
 }
 
 btnSave.addEventListener("click", async () => {
