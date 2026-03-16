@@ -1,0 +1,7 @@
+src/
+electron/
+scripts/
+release/
+app-build/
+.env
+*.docx

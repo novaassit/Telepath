@@ -30,3 +30,13 @@ for (const file of jsFiles) {
   unlinkSync(filePath);
 }
 console.log(`Renamed ${jsFiles.length} files: .js -> .cjs`);
+
+// Create package.json for electron-builder (dist-electron is the app directory)
+const electronPkg = {
+  name: "telepath",
+  version: "1.0.0",
+  main: "main.cjs",
+  description: "Telegram chatbot powered by LLM",
+};
+writeFileSync(join(distElectron, "package.json"), JSON.stringify(electronPkg, null, 2) + "\n");
+console.log("Created dist-electron/package.json");
