@@ -152,6 +152,47 @@ OPENAI_MODEL=gpt-4
 | `SYSTEM_PROMPT` | | `You are a helpful assistant.` | 시스템 프롬프트 |
 | `MAX_HISTORY_MESSAGES` | | `20` | 유지할 최대 대화 메시지 수 |
 
+## Electron 데스크톱 앱
+
+GUI로 봇을 관리할 수 있는 Electron 데스크톱 앱을 지원합니다.
+
+### 기능
+
+- **Start/Stop** 버튼으로 봇 실행/중지
+- **실시간 로그 뷰어** (stdout/stderr 표시)
+- **Settings 탭**에서 `.env` 설정을 GUI로 편집
+- LLM 프로바이더 선택 시 해당 설정만 표시
+
+### 실행 (개발)
+
+```bash
+npm run dev:electron     # 개발 모드 (빌드 + 실행)
+npm run build:electron   # TypeScript 빌드만
+npm run start:electron   # 빌드된 앱 실행
+```
+
+### 패키징 (배포용 바이너리)
+
+```bash
+npm run pack   # .app (Mac) / 실행 파일만 생성 (빠름)
+npm run dist   # .dmg (Mac) / .exe (Win) / .AppImage (Linux) 인스톨러 생성
+```
+
+빌드 결과물은 `release/` 디렉토리에 생성됩니다.
+
+### 구조
+
+```
+electron/
+├── main.ts          # Electron 메인 프로세스
+├── preload.ts       # IPC 브릿지 (contextBridge)
+├── bot-runner.ts    # child_process로 봇 실행/관리
+├── env-manager.ts   # .env 파일 읽기/쓰기
+└── renderer/        # UI (vanilla HTML/CSS/JS)
+```
+
+> 기존 CLI 모드(`npm run dev`)는 그대로 사용 가능합니다. Electron은 봇을 child process로 실행하므로 기존 코드에 영향이 없습니다.
+
 ## 빌드
 
 ```bash

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'" />
+  <title>Telepath</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <div class="header-left">
+      <h1>Telepath</h1>
+      <span class="subtitle">Telegram Bot Manager</span>
+    </div>
+    <div class="header-right">
+      <span id="status-dot" class="status-dot stopped"></span>
+      <span id="status-text">Stopped</span>
+      <button id="btn-start" class="btn btn-start">Start</button>
+      <button id="btn-stop" class="btn btn-stop" disabled>Stop</button>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="logs">Logs</button>
+    <button class="tab" data-tab="settings">Settings</button>
+  </nav>
+
+  <main>
+    <section id="tab-logs" class="tab-content active">
+      <div id="log-container"></div>
+      <div class="log-actions">
+        <button id="btn-clear-logs" class="btn btn-secondary">Clear Logs</button>
+      </div>
+    </section>
+
+    <section id="tab-settings" class="tab-content">
+      <div id="settings-form"></div>
+      <div class="settings-actions">
+        <button id="btn-save" class="btn btn-start">Save Settings</button>
+        <span id="save-message" class="save-message"></span>
+      </div>
+    </section>
+  </main>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
