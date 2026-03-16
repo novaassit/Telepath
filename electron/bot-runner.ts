@@ -49,15 +49,14 @@ export class BotRunner extends EventEmitter {
     let cwd: string;
 
     if (app.isPackaged) {
-      // 패키징 모드: 미리 빌드된 JS를 node로 실행
-      const appRoot = app.getAppPath();
-      const entryFile = path.join(appRoot, "dist", "index.js");
+      // 패키징 모드: extraResources/bot/ 에서 실행 (asar 밖)
+      const botRoot = path.join(process.resourcesPath, "bot");
+      const entryFile = path.join(botRoot, "dist", "index.js");
       command = process.execPath;
       mergedEnv["ELECTRON_RUN_AS_NODE"] = "1";
-      // ESM import 지원을 위해 플래그 추가
       args = ["--experimental-detect-module", entryFile];
-      cwd = appRoot;
-      this.log("info", `appRoot: ${appRoot}`);
+      cwd = botRoot;
+      this.log("info", `botRoot: ${botRoot}`);
       this.log("info", `entryFile: ${entryFile}`);
     } else {
       // 개발 모드: tsx로 TypeScript 직접 실행

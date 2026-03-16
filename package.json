@@ -35,16 +35,24 @@
     },
     "files": [
       "dist-electron/**/*",
-      "dist/**/*",
-      "src/**/*",
-      "node_modules/**/*",
-      "package.json",
-      ".env.example"
+      "package.json"
     ],
     "extraResources": [
       {
         "from": ".env.example",
         "to": ".env.example"
+      },
+      {
+        "from": "dist",
+        "to": "bot/dist"
+      },
+      {
+        "from": "node_modules",
+        "to": "bot/node_modules"
+      },
+      {
+        "from": "package.json",
+        "to": "bot/package.json"
       }
     ],
     "mac": {
