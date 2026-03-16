@@ -174,9 +174,17 @@ btnSave.addEventListener("click", async () => {
 
 // Init
 async function init() {
-  const status = await electronAPI.getStatus();
-  updateStatus(status);
-  await loadSettings();
+  try {
+    const status = await electronAPI.getStatus();
+    updateStatus(status);
+  } catch (e) {
+    console.error("Failed to get bot status:", e);
+  }
+  try {
+    await loadSettings();
+  } catch (e) {
+    console.error("Failed to load settings:", e);
+  }
 }
 
 init();

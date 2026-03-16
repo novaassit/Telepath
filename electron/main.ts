@@ -30,6 +30,11 @@ function createWindow() {
 
   mainWindow.loadFile(path.join(__dirname, "renderer", "index.html"));
 
+  // DevTools 열기 (개발 모드)
+  if (!app.isPackaged) {
+    mainWindow.webContents.openDevTools({ mode: "bottom" });
+  }
+
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
