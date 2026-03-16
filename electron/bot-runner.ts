@@ -1,6 +1,7 @@
 import { EventEmitter } from "node:events";
 import { spawn, type ChildProcess } from "node:child_process";
 import path from "node:path";
+import { app } from "electron";
 
 export type BotStatus = "stopped" | "starting" | "running" | "error";
 
@@ -41,13 +42,32 @@ export class BotRunner extends EventEmitter {
     this.setStatus("starting");
     this.log("info", "봇을 시작합니다...");
 
-    const tsxBin = path.resolve(projectRoot, "node_modules", ".bin", "tsx");
-    const entryFile = path.resolve(projectRoot, "src", "index.ts");
-
     const mergedEnv = { ...process.env, ...envVars };
 
-    this.child = spawn(tsxBin, [entryFile], {
-      cwd: projectRoot,
+    let command: string;
+    let args: string[];
+    let cwd: string;
+
+    if (app.isPackaged) {
+      // 패키징 모드: 미리 빌드된 JS를 node로 실행
+      const appRoot = path.join(app.getAppPath());
+      const entryFile = path.join(appRoot, "dist", "index.js");
+      command = process.execPath; // Electron 내장 node
+      // Electron의 node로 일반 스크립트를 실행하려면 ELECTRON_RUN_AS_NODE 필요
+      mergedEnv["ELECTRON_RUN_AS_NODE"] = "1";
+      args = [entryFile];
+      cwd = appRoot;
+    } else {
+      // 개발 모드: tsx로 TypeScript 직접 실행
+      const tsxBin = path.resolve(projectRoot, "node_modules", ".bin", "tsx");
+      const entryFile = path.resolve(projectRoot, "src", "index.ts");
+      command = tsxBin;
+      args = [entryFile];
+      cwd = projectRoot;
+    }
+
+    this.child = spawn(command, args, {
+      cwd,
       env: mergedEnv,
       stdio: ["pipe", "pipe", "pipe"],
     });
