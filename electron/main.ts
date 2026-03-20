@@ -1,29 +1,22 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import path from "node:path";
-import { BotRunner } from "./bot-runner";
-import {
-  readEnvFile,
-  writeEnvFile,
-  getEnvSchema,
-  getEnvPath,
-  getExampleEnvPath,
-} from "./env-manager";
+import { ProfileManager, type LLMProviderConfig, type BotConfig } from "./profile-manager";
+import { BotManager } from "./bot-manager";
 
 // 개발 모드: dist-electron/../ = 프로젝트 루트
 // 패키징 모드: userData (~Library/Application Support/Telepath) 에 .env 저장
-//              extraResources (Contents/Resources) 에 .env.example
 const projectRoot = app.isPackaged
   ? path.dirname(app.getPath("exe"))
   : path.resolve(__dirname, "..");
 
-// .env 저장 경로: 패키징 시 userData, 개발 시 프로젝트 루트
-const envDir = app.isPackaged ? app.getPath("userData") : projectRoot;
+// 데이터 저장 경로: 패키징 시 userData, 개발 시 프로젝트 루트
+const dataDir = app.isPackaged ? app.getPath("userData") : projectRoot;
 
-// .env.example 경로: 패키징 시 Resources 폴더, 개발 시 프로젝트 루트
-const resourcesDir = app.isPackaged
-  ? (process.resourcesPath ?? path.join(path.dirname(app.getPath("exe")), "..", "Resources"))
-  : projectRoot;
-const botRunner = new BotRunner();
+// .env 경로 (마이그레이션 소스)
+const envDir = dataDir;
+
+const profileManager = new ProfileManager(dataDir, envDir);
+const botManager = new BotManager(profileManager, projectRoot);
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -43,55 +36,83 @@ function createWindow() {
 
   mainWindow.loadFile(path.join(__dirname, "renderer", "index.html"));
 
-
-
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
 }
 
-// IPC handlers
-ipcMain.handle("bot:start", () => {
-  const envVars = readEnvFile(getEnvPath(envDir));
-  botRunner.start(projectRoot, envVars);
+// --- Provider IPC ---
+ipcMain.handle("provider:list", () => {
+  return profileManager.getProviders();
 });
 
-ipcMain.handle("bot:stop", () => {
-  botRunner.stop();
+ipcMain.handle("provider:get", (_event, id: string) => {
+  return profileManager.getProvider(id);
 });
 
-ipcMain.handle("bot:status", () => {
-  return botRunner.status;
+ipcMain.handle("provider:save", (_event, id: string, config: LLMProviderConfig) => {
+  profileManager.saveProvider(id, config);
 });
 
-ipcMain.handle("env:read", () => {
-  return readEnvFile(getEnvPath(envDir));
+ipcMain.handle("provider:delete", (_event, id: string) => {
+  return profileManager.deleteProvider(id);
 });
 
-ipcMain.handle("env:write", (_event, values: Record<string, string>) => {
-  writeEnvFile(getEnvPath(envDir), values);
+// --- Bot Config IPC ---
+ipcMain.handle("botConfig:list", () => {
+  return profileManager.getBots();
 });
 
-ipcMain.handle("env:get-schema", () => {
-  return getEnvSchema(getExampleEnvPath(resourcesDir));
+ipcMain.handle("botConfig:get", (_event, id: string) => {
+  return profileManager.getBot(id);
+});
+
+ipcMain.handle("botConfig:save", (_event, id: string, config: BotConfig) => {
+  profileManager.saveBot(id, config);
+});
+
+ipcMain.handle("botConfig:delete", (_event, id: string) => {
+  profileManager.deleteBot(id);
+});
+
+// --- Bot Runtime IPC ---
+ipcMain.handle("bot:start", (_event, botId: string) => {
+  return botManager.startBot(botId);
+});
+
+ipcMain.handle("bot:stop", (_event, botId: string) => {
+  botManager.stopBot(botId);
+});
+
+ipcMain.handle("bot:status", (_event, botId: string) => {
+  return botManager.getBotStatus(botId);
+});
+
+ipcMain.handle("bot:allStatuses", () => {
+  return botManager.getAllStatuses();
+});
+
+// --- Profiles raw access ---
+ipcMain.handle("profiles:read", () => {
+  return profileManager.read();
 });
 
 // Forward bot events to renderer
-botRunner.on("log", (entry) => {
+botManager.on("log", (entry) => {
   mainWindow?.webContents.send("bot:log", entry);
 });
 
-botRunner.on("status-change", (status) => {
-  mainWindow?.webContents.send("bot:status-changed", status);
+botManager.on("status-change", (info) => {
+  mainWindow?.webContents.send("bot:status-changed", info);
 });
 
 app.whenReady().then(createWindow);
 
 app.on("window-all-closed", () => {
-  botRunner.stop();
+  botManager.stopAll();
   app.quit();
 });
 
 app.on("before-quit", () => {
-  botRunner.stop();
+  botManager.stopAll();
 });

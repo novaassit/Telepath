@@ -9,11 +9,18 @@ export interface LogEntry {
   level: "info" | "error";
   text: string;
   timestamp: string;
+  botId?: string;
 }
 
 export class BotRunner extends EventEmitter {
   private child: ChildProcess | null = null;
   private _status: BotStatus = "stopped";
+  readonly botId: string;
+
+  constructor(botId: string = "default") {
+    super();
+    this.botId = botId;
+  }
 
   get status(): BotStatus {
     return this._status;
