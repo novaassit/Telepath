@@ -10,38 +10,135 @@
   <header>
     <div class="header-left">
       <h1>Telepath</h1>
-      <span class="subtitle">Telegram Bot Manager</span>
-    </div>
-    <div class="header-right">
-      <span id="status-dot" class="status-dot stopped"></span>
-      <span id="status-text">Stopped</span>
-      <button id="btn-start" class="btn btn-start">Start</button>
-      <button id="btn-stop" class="btn btn-stop" disabled>Stop</button>
     </div>
   </header>
 
   <nav class="tabs">
-    <button class="tab active" data-tab="logs">Logs</button>
-    <button class="tab" data-tab="settings">Settings</button>
+    <button class="tab active" data-tab="bots">Bots</button>
+    <button class="tab" data-tab="providers">Providers</button>
+    <button class="tab" data-tab="logs">Logs</button>
   </nav>
 
   <main>
-    <section id="tab-logs" class="tab-content active">
-      <div id="log-container"></div>
-      <div class="log-actions">
-        <button id="btn-clear-logs" class="btn btn-secondary">Clear Logs</button>
+    <!-- Bots Tab -->
+    <section id="tab-bots" class="tab-content active">
+      <div class="tab-toolbar">
+        <button id="btn-add-bot" class="btn btn-start">+ Add Bot</button>
       </div>
+      <div id="bots-list" class="card-list"></div>
     </section>
 
-    <section id="tab-settings" class="tab-content">
-      <div id="settings-form"></div>
-      <div class="settings-actions">
-        <button id="btn-save" class="btn btn-start">Save Settings</button>
-        <span id="save-message" class="save-message"></span>
+    <!-- Providers Tab -->
+    <section id="tab-providers" class="tab-content">
+      <div class="tab-toolbar">
+        <button id="btn-add-provider" class="btn btn-start">+ Add Provider</button>
       </div>
+      <div id="providers-list" class="card-list"></div>
+    </section>
+
+    <!-- Logs Tab -->
+    <section id="tab-logs" class="tab-content">
+      <div class="log-toolbar">
+        <select id="log-bot-filter">
+          <option value="all">All Bots</option>
+        </select>
+        <button id="btn-clear-logs" class="btn btn-secondary">Clear</button>
+      </div>
+      <div id="log-container"></div>
     </section>
   </main>
 
+  <!-- Bot Edit Modal -->
+  <div id="modal-bot" class="modal hidden">
+    <div class="modal-content">
+      <h2 id="modal-bot-title">Add Bot</h2>
+      <div class="modal-body">
+        <div class="field">
+          <label>Bot ID</label>
+          <input type="text" id="bot-id" placeholder="e.g. jimmy" />
+        </div>
+        <div class="field">
+          <label>Display Name</label>
+          <input type="text" id="bot-name" placeholder="e.g. Jimmy Bot" />
+        </div>
+        <div class="field">
+          <label>Telegram Bot Token</label>
+          <input type="password" id="bot-token" placeholder="123456:ABC-DEF..." />
+        </div>
+        <div class="field">
+          <label>LLM Provider</label>
+          <select id="bot-provider"></select>
+        </div>
+        <div class="field">
+          <label>System Prompt</label>
+          <textarea id="bot-system-prompt" rows="3" placeholder="You are a helpful assistant."></textarea>
+        </div>
+        <div class="field">
+          <label>Max History Messages</label>
+          <input type="number" id="bot-max-history" placeholder="20" />
+        </div>
+        <div class="field">
+          <label>Max Input Length</label>
+          <input type="number" id="bot-max-input" placeholder="10000" />
+        </div>
+        <div class="field">
+          <label>Allow From (Telegram User IDs, comma separated)</label>
+          <input type="text" id="bot-allow-from" placeholder="Leave empty for all users" />
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button id="btn-bot-save" class="btn btn-start">Save</button>
+        <button id="btn-bot-cancel" class="btn btn-secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Provider Edit Modal -->
+  <div id="modal-provider" class="modal hidden">
+    <div class="modal-content">
+      <h2 id="modal-provider-title">Add Provider</h2>
+      <div class="modal-body">
+        <div class="field">
+          <label>Provider ID</label>
+          <input type="text" id="provider-id" placeholder="e.g. claude-main" />
+        </div>
+        <div class="field">
+          <label>Type</label>
+          <select id="provider-type">
+            <option value="ollama">Ollama</option>
+            <option value="openai">OpenAI</option>
+            <option value="custom">Custom (OpenAI compatible)</option>
+            <option value="claude">Claude / Anthropic</option>
+            <option value="gemini">Gemini / Google AI</option>
+          </select>
+        </div>
+        <div class="field provider-field" data-for="openai claude gemini custom">
+          <label>API Key</label>
+          <input type="password" id="provider-api-key" />
+        </div>
+        <div class="field provider-field" data-for="ollama openai custom">
+          <label>Base URL</label>
+          <input type="text" id="provider-base-url" placeholder="e.g. http://localhost:11434" />
+        </div>
+        <div class="field">
+          <label>Model</label>
+          <input type="text" id="provider-model" placeholder="e.g. claude-opus-4-6" />
+        </div>
+        <div class="field provider-field" data-for="claude gemini">
+          <label>Max Tokens</label>
+          <input type="number" id="provider-max-tokens" placeholder="8192" />
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button id="btn-provider-save" class="btn btn-start">Save</button>
+        <button id="btn-provider-cancel" class="btn btn-secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="tabs/bots-tab.js"></script>
+  <script src="tabs/providers-tab.js"></script>
+  <script src="tabs/logs-tab.js"></script>
   <script src="renderer.js"></script>
 </body>
 </html>
