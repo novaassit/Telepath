@@ -59,7 +59,7 @@ const ProvidersTab = (() => {
           <span class="card-badge">${escapeHtml(p.type)}</span>
         </div>
         <div class="card-body">
-          <div class="card-detail"><span class="detail-label">Model:</span> ${escapeHtml(p.model || "default")}</div>
+          ${p.model ? `<div class="card-detail"><span class="detail-label">Model:</span> ${escapeHtml(p.model)}</div>` : ""}
           <div class="card-detail"><span class="detail-label">Used by:</span> ${count} bot${count !== 1 ? "s" : ""}</div>
           ${p.baseUrl ? `<div class="card-detail"><span class="detail-label">URL:</span> ${escapeHtml(p.baseUrl)}</div>` : ""}
         </div>

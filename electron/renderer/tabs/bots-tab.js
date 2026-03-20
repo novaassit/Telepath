@@ -92,12 +92,15 @@ const BotsTab = (() => {
     }
   }
 
+  function generateBotId() {
+    return "bot-" + Date.now().toString(36);
+  }
+
   function openModal(botId, botData) {
     const el = getElements();
     editingBotId = botId;
     el.modalTitle.textContent = botId ? "Edit Bot" : "Add Bot";
     el.idInput.value = botId || "";
-    el.idInput.disabled = !!botId;
     el.nameInput.value = botData?.name || "";
     el.tokenInput.value = botData?.telegramBotToken || "";
     el.systemPrompt.value = botData?.systemPrompt || "";
@@ -122,8 +125,7 @@ const BotsTab = (() => {
 
   async function saveBot() {
     const el = getElements();
-    const id = editingBotId || el.idInput.value.trim();
-    if (!id) return alert("Bot ID is required");
+    const id = editingBotId || generateBotId();
 
     const config = {
       name: el.nameInput.value.trim() || id,
