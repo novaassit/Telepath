@@ -19,6 +19,19 @@ bot.use((ctx, next) => {
   return next();
 });
 
+// allowFrom 필터: 목록이 비어있으면 모든 유저 허용, 있으면 목록에 있는 유저만 허용
+if (config.allowFrom.length > 0) {
+  bot.use((ctx, next) => {
+    const userId = ctx.from?.id;
+    if (!userId || !config.allowFrom.includes(userId)) {
+      console.log(`[차단] user_id=${userId} — allowFrom 목록에 없음`);
+      return;
+    }
+    return next();
+  });
+  console.log(`[인증] allowFrom 활성화: ${config.allowFrom.join(", ")}`);
+}
+
 bot.command("start", (ctx) =>
   ctx.reply("안녕하세요! AI 챗봇입니다. 메시지를 보내주세요.")
 );
