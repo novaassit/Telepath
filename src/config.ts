@@ -7,6 +7,7 @@ interface Config {
   systemPrompt: string;
   maxHistoryMessages: number;
   maxInputLength: number;
+  allowFrom: number[];
   llm: {
     provider: LLMProviderType;
     ollama?: { baseUrl: string; model: string };
@@ -33,6 +34,12 @@ export const config: Config = {
   systemPrompt: process.env.SYSTEM_PROMPT || "You are a helpful assistant.",
   maxHistoryMessages: Number(process.env.MAX_HISTORY_MESSAGES) || 20,
   maxInputLength: Number(process.env.MAX_INPUT_LENGTH) || 10000,
+  allowFrom: (process.env.ALLOW_FROM ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map(Number)
+    .filter((n) => !isNaN(n)),
   llm: {
     provider,
     ollama: {
