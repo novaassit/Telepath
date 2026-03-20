@@ -180,42 +180,61 @@ export class ProfileManager {
     const env = readEnvFile(envPath);
     if (!env.TELEGRAM_BOT_TOKEN) return null;
 
-    const providerType = (env.LLM_PROVIDER || "ollama") as LLMProviderConfig["type"];
-    const providerId = `${providerType}-default`;
+    const activeProvider = (env.LLM_PROVIDER || "ollama") as LLMProviderConfig["type"];
+    const providers: Record<string, LLMProviderConfig> = {};
 
-    const providerConfig: LLMProviderConfig = { type: providerType };
-
-    switch (providerType) {
-      case "ollama":
-        if (env.OLLAMA_BASE_URL) providerConfig.baseUrl = env.OLLAMA_BASE_URL;
-        if (env.OLLAMA_MODEL) providerConfig.model = env.OLLAMA_MODEL;
-        break;
-      case "openai":
-        if (env.OPENAI_API_KEY) providerConfig.apiKey = env.OPENAI_API_KEY;
-        if (env.OPENAI_BASE_URL) providerConfig.baseUrl = env.OPENAI_BASE_URL;
-        if (env.OPENAI_MODEL) providerConfig.model = env.OPENAI_MODEL;
-        break;
-      case "custom":
-        if (env.CUSTOM_LLM_BASE_URL) providerConfig.baseUrl = env.CUSTOM_LLM_BASE_URL;
-        if (env.CUSTOM_LLM_API_KEY) providerConfig.apiKey = env.CUSTOM_LLM_API_KEY;
-        if (env.CUSTOM_LLM_MODEL) providerConfig.model = env.CUSTOM_LLM_MODEL;
-        break;
-      case "claude":
-        if (env.ANTHROPIC_API_KEY) providerConfig.apiKey = env.ANTHROPIC_API_KEY;
-        if (env.CLAUDE_MODEL) providerConfig.model = env.CLAUDE_MODEL;
-        if (env.CLAUDE_MAX_TOKENS) providerConfig.maxTokens = Number(env.CLAUDE_MAX_TOKENS);
-        break;
-      case "gemini":
-        if (env.GEMINI_API_KEY) providerConfig.apiKey = env.GEMINI_API_KEY;
-        if (env.GEMINI_MODEL) providerConfig.model = env.GEMINI_MODEL;
-        if (env.GEMINI_MAX_TOKENS) providerConfig.maxTokens = Number(env.GEMINI_MAX_TOKENS);
-        break;
+    // Ollama — always available (local, no key needed)
+    if (env.OLLAMA_BASE_URL || env.OLLAMA_MODEL) {
+      const p: LLMProviderConfig = { type: "ollama" };
+      if (env.OLLAMA_BASE_URL) p.baseUrl = env.OLLAMA_BASE_URL;
+      if (env.OLLAMA_MODEL) p.model = env.OLLAMA_MODEL;
+      providers["ollama"] = p;
     }
+
+    // OpenAI
+    if (env.OPENAI_API_KEY) {
+      const p: LLMProviderConfig = { type: "openai", apiKey: env.OPENAI_API_KEY };
+      if (env.OPENAI_BASE_URL) p.baseUrl = env.OPENAI_BASE_URL;
+      if (env.OPENAI_MODEL) p.model = env.OPENAI_MODEL;
+      providers["openai"] = p;
+    }
+
+    // Custom (OpenAI-compatible)
+    if (env.CUSTOM_LLM_BASE_URL) {
+      const p: LLMProviderConfig = { type: "custom", baseUrl: env.CUSTOM_LLM_BASE_URL };
+      if (env.CUSTOM_LLM_API_KEY) p.apiKey = env.CUSTOM_LLM_API_KEY;
+      if (env.CUSTOM_LLM_MODEL) p.model = env.CUSTOM_LLM_MODEL;
+      providers["custom"] = p;
+    }
+
+    // Claude
+    if (env.ANTHROPIC_API_KEY) {
+      const p: LLMProviderConfig = { type: "claude", apiKey: env.ANTHROPIC_API_KEY };
+      if (env.CLAUDE_MODEL) p.model = env.CLAUDE_MODEL;
+      if (env.CLAUDE_MAX_TOKENS) p.maxTokens = Number(env.CLAUDE_MAX_TOKENS);
+      providers["claude"] = p;
+    }
+
+    // Gemini
+    if (env.GEMINI_API_KEY) {
+      const p: LLMProviderConfig = { type: "gemini", apiKey: env.GEMINI_API_KEY };
+      if (env.GEMINI_MODEL) p.model = env.GEMINI_MODEL;
+      if (env.GEMINI_MAX_TOKENS) p.maxTokens = Number(env.GEMINI_MAX_TOKENS);
+      providers["gemini"] = p;
+    }
+
+    // If no providers detected at all, create a placeholder for the active one
+    if (Object.keys(providers).length === 0) {
+      providers[activeProvider] = { type: activeProvider };
+    }
+
+    // Bot uses the active provider (fall back to first available)
+    const botProviderId = providers[activeProvider] ? activeProvider : Object.keys(providers)[0];
 
     const botConfig: BotConfig = {
       name: "Default Bot",
       telegramBotToken: env.TELEGRAM_BOT_TOKEN,
-      llmProvider: providerId,
+      llmProvider: botProviderId,
       systemPrompt: env.SYSTEM_PROMPT || undefined,
       maxHistoryMessages: env.MAX_HISTORY_MESSAGES
         ? Number(env.MAX_HISTORY_MESSAGES)
@@ -230,7 +249,7 @@ export class ProfileManager {
 
     return {
       version: 1,
-      llmProviders: { [providerId]: providerConfig },
+      llmProviders: providers,
       bots: { default: botConfig },
     };
   }
