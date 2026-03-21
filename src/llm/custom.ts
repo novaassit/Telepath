@@ -72,5 +72,67 @@ export function createCustomProvider(): LLMProvider {
       }
       return content;
     },
+
+    async *chatStream(messages: Message[]): AsyncGenerator<string, void, unknown> {
+      const body: ChatMessage[] = messages.map((m) => ({
+        role: m.role,
+        content: m.content,
+      }));
+
+      let res: Response;
+      try {
+        res = await fetch(url, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ model, messages: body, stream: true }),
+          signal: AbortSignal.timeout(120_000),
+        });
+      } catch (err) {
+        throw new Error(
+          `Custom LLM(OpenAI 호환)에 연결할 수 없습니다 (${url}). 네트워크를 확인하세요.`
+        );
+      }
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Custom LLM 오류 (${res.status}): ${text}`);
+      }
+
+      yield* parseSSE(res);
+    },
   };
+}
+
+/** OpenAI 호환 SSE 스트림 파싱 */
+async function* parseSSE(res: Response): AsyncGenerator<string, void, unknown> {
+  const reader = res.body!.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+
+      const lines = buffer.split("\n");
+      buffer = lines.pop()!;
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed || !trimmed.startsWith("data: ")) continue;
+        const data = trimmed.slice(6);
+        if (data === "[DONE]") return;
+        try {
+          const parsed = JSON.parse(data);
+          const content = parsed.choices?.[0]?.delta?.content;
+          if (content) yield content;
+        } catch {
+          // skip malformed JSON
+        }
+      }
+    }
+  } finally {
+    reader.releaseLock();
+  }
 }

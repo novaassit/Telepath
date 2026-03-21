@@ -6,6 +6,22 @@ import { fetchIPv4 } from "./fetch-ipv4.js";
 
 const MAX_MESSAGE_LENGTH = 4096;
 
+/** 유사 스트리밍: editMessageText 최소 간격 (ms) */
+const STREAM_UPDATE_INTERVAL = 1000;
+
+/** 안전한 분할 지점을 찾아 end 인덱스를 반환 */
+function splitAtSafeBoundary(text: string, start: number): number {
+  let end = Math.min(start + MAX_MESSAGE_LENGTH, text.length);
+  if (end < text.length) {
+    const chunk = text.slice(start, end);
+    const lastNewline = chunk.lastIndexOf("\n");
+    const lastSpace = chunk.lastIndexOf(" ");
+    const safeBreak = Math.max(lastNewline, lastSpace);
+    if (safeBreak > MAX_MESSAGE_LENGTH / 2) end = start + safeBreak + 1;
+  }
+  return end;
+}
+
 export const bot = new Bot(config.telegramBotToken, {
   client: {
     fetch: fetchIPv4 as typeof fetch,
@@ -71,29 +87,79 @@ bot.on("message:text", async (ctx) => {
   try {
     const history = getHistory(userId);
     const llm = getLLMProvider();
-    let reply = await llm.chat(history);
-    if (typeof reply !== "string" || !reply.trim()) {
-      reply = "(응답이 비어 있었습니다. 다시 질문해 주세요.)";
-    }
-    addMessage(userId, "assistant", reply);
 
-    // Split long messages (Telegram 4096자 제한). 문장/단어 중간에서 잘리지 않도록 구간 나눔
-    const toSend = reply.trim();
-    if (toSend.length <= MAX_MESSAGE_LENGTH) {
-      await ctx.reply(toSend);
-    } else {
-      let start = 0;
-      while (start < toSend.length) {
-        let end = Math.min(start + MAX_MESSAGE_LENGTH, toSend.length);
-        if (end < toSend.length) {
-          const chunk = toSend.slice(start, end);
-          const lastNewline = chunk.lastIndexOf("\n");
-          const lastSpace = chunk.lastIndexOf(" ");
-          const safeBreak = Math.max(lastNewline, lastSpace);
-          if (safeBreak > MAX_MESSAGE_LENGTH / 2) end = start + safeBreak + 1;
+    if (config.streaming && llm.chatStream) {
+      // 스트리밍 모드: editMessageText로 유사 스트리밍
+      const placeholder = await ctx.reply("...");
+      const msgId = placeholder.message_id;
+      const chatId = ctx.chat.id;
+      let fullText = "";
+      let lastUpdate = 0;
+      let lastSentText = "...";
+
+      for await (const chunk of llm.chatStream(history)) {
+        fullText += chunk;
+        const now = Date.now();
+        if (now - lastUpdate >= STREAM_UPDATE_INTERVAL) {
+          const display = fullText.slice(0, MAX_MESSAGE_LENGTH) || "...";
+          if (display !== lastSentText) {
+            try {
+              await ctx.api.editMessageText(chatId, msgId, display);
+              lastSentText = display;
+            } catch {
+              // editMessageText 실패 시 무시 (내용 동일 등)
+            }
+          }
+          lastUpdate = now;
         }
-        await ctx.reply(toSend.slice(start, end));
-        start = end;
+      }
+
+      // 최종 업데이트
+      let reply = fullText.trim();
+      if (!reply) reply = "(응답이 비어 있었습니다. 다시 질문해 주세요.)";
+      addMessage(userId, "assistant", reply);
+
+      if (reply.length <= MAX_MESSAGE_LENGTH) {
+        if (reply !== lastSentText) {
+          try {
+            await ctx.api.editMessageText(chatId, msgId, reply);
+          } catch {
+            // 내용 동일 시 무시
+          }
+        }
+      } else {
+        // 긴 응답: 첫 메시지 편집 후 나머지 분할 전송
+        const firstChunk = splitAtSafeBoundary(reply, 0);
+        try {
+          await ctx.api.editMessageText(chatId, msgId, reply.slice(0, firstChunk));
+        } catch {
+          // ignore
+        }
+        let start = firstChunk;
+        while (start < reply.length) {
+          const end = splitAtSafeBoundary(reply, start);
+          await ctx.reply(reply.slice(start, end));
+          start = end;
+        }
+      }
+    } else {
+      // 기존 non-streaming 모드
+      let reply = await llm.chat(history);
+      if (typeof reply !== "string" || !reply.trim()) {
+        reply = "(응답이 비어 있었습니다. 다시 질문해 주세요.)";
+      }
+      addMessage(userId, "assistant", reply);
+
+      const toSend = reply.trim();
+      if (toSend.length <= MAX_MESSAGE_LENGTH) {
+        await ctx.reply(toSend);
+      } else {
+        let start = 0;
+        while (start < toSend.length) {
+          const end = splitAtSafeBoundary(toSend, start);
+          await ctx.reply(toSend.slice(start, end));
+          start = end;
+        }
       }
     }
   } catch (err) {

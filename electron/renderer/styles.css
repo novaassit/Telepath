@@ -329,6 +329,20 @@ main {
   margin-bottom: 4px;
 }
 
+.toggle-label {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.toggle-label input[type="checkbox"] {
+  width: auto;
+  accent-color: #6c63ff;
+  cursor: pointer;
+}
+
 .field input,
 .field select,
 .field textarea {
