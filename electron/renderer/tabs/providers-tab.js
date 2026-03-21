@@ -17,6 +17,7 @@ const ProvidersTab = (() => {
       baseUrl: document.getElementById("provider-base-url"),
       model: document.getElementById("provider-model"),
       maxTokens: document.getElementById("provider-max-tokens"),
+      streaming: document.getElementById("provider-streaming"),
     };
   }
 
@@ -60,6 +61,7 @@ const ProvidersTab = (() => {
         </div>
         <div class="card-body">
           <div class="card-detail"><span class="detail-label">Model:</span> ${escapeHtml(p.model || "default")}</div>
+          <div class="card-detail"><span class="detail-label">Streaming:</span> ${p.streaming ? "ON" : "OFF"}</div>
           <div class="card-detail"><span class="detail-label">Used by:</span> ${count} bot${count !== 1 ? "s" : ""}</div>
           ${p.baseUrl ? `<div class="card-detail"><span class="detail-label">URL:</span> ${escapeHtml(p.baseUrl)}</div>` : ""}
         </div>
@@ -92,6 +94,7 @@ const ProvidersTab = (() => {
     el.baseUrl.value = providerData?.baseUrl || "";
     el.model.value = providerData?.model || "";
     el.maxTokens.value = providerData?.maxTokens ?? "";
+    el.streaming.checked = providerData?.streaming ?? false;
 
     updateProviderFields();
     el.modal.classList.remove("hidden");
@@ -115,6 +118,7 @@ const ProvidersTab = (() => {
     if (el.baseUrl.value.trim()) config.baseUrl = el.baseUrl.value.trim();
     if (el.model.value.trim()) config.model = el.model.value.trim();
     if (el.maxTokens.value) config.maxTokens = Number(el.maxTokens.value);
+    config.streaming = el.streaming.checked;
 
     await api.saveProvider(id, config);
     closeModal();

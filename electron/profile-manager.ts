@@ -8,6 +8,7 @@ export interface LLMProviderConfig {
   baseUrl?: string;
   model?: string;
   maxTokens?: number;
+  streaming?: boolean;
 }
 
 export interface BotConfig {
@@ -139,6 +140,9 @@ export class ProfileManager {
       env.MAX_INPUT_LENGTH = String(bot.maxInputLength);
     if (bot.allowFrom && bot.allowFrom.length > 0)
       env.ALLOW_FROM = bot.allowFrom.join(",");
+
+    // Streaming
+    if (provider.streaming) env.STREAMING = "true";
 
     // Provider settings
     switch (provider.type) {

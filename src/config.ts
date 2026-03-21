@@ -8,6 +8,7 @@ interface Config {
   maxHistoryMessages: number;
   maxInputLength: number;
   allowFrom: number[];
+  streaming: boolean;
   llm: {
     provider: LLMProviderType;
     ollama?: { baseUrl: string; model: string };
@@ -40,6 +41,7 @@ export const config: Config = {
     .filter(Boolean)
     .map(Number)
     .filter((n) => !isNaN(n)),
+  streaming: process.env.STREAMING === "true",
   llm: {
     provider,
     ollama: {
